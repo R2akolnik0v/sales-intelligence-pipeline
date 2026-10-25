@@ -8,21 +8,24 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 DB_DIR = PROJECT_DIR / "data"
 DB_PATH = DB_DIR / "sales.db"
 
+
 def salvar_no_banco(df: pd.DataFrame, tabela: str = "vendas") -> None:
     """Salva os dados tratados em uma tabela SQLite."""
-
     DB_DIR.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(DB_PATH) as conexao:
+    conexao = sqlite3.connect(DB_PATH)
+    try:
         df.to_sql(tabela, conexao, if_exists="replace", index=False)
+    finally:
+        conexao.close()
 
     print(f"Dados salvos no banco: {DB_PATH}")
 
 
-
-
 def consultar_vendas_por_pais():
-    with sqlite3.connect(DB_PATH) as conexao:
+    """Consulta os dez países com maior faturamento."""
+    conexao = sqlite3.connect(DB_PATH)
+    try:
         consulta = """
             SELECT
                 Country,
@@ -32,18 +35,17 @@ def consultar_vendas_por_pais():
             ORDER BY faturamento DESC
             LIMIT 10;
         """
-
         resultado = pd.read_sql_query(consulta, conexao)
-        print(resultado)
+    finally:
+        conexao.close()
 
-
-if __name__ == "__main__":
-    consultar_vendas_por_pais()
-
+    print(resultado)
 
 
 def consultar_vendas_por_mes():
-    with sqlite3.connect(DB_PATH) as conexao:
+    """Consulta o faturamento agrupado por mês."""
+    conexao = sqlite3.connect(DB_PATH)
+    try:
         consulta = """
             SELECT
                 substr(InvoiceDate, 1, 7) AS mes,
@@ -52,6 +54,12 @@ def consultar_vendas_por_mes():
             GROUP BY mes
             ORDER BY mes;
         """
-
         resultado = pd.read_sql_query(consulta, conexao)
-        print(resultado)
+    finally:
+        conexao.close()
+
+    print(resultado)
+
+
+if __name__ == "__main__":
+    consultar_vendas_por_pais()

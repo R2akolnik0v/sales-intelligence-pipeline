@@ -19,3 +19,5 @@ data/sales.db
 # Arquivos temporários
 *.log
 .DS_Store
+
+.coverage
